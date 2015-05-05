@@ -35,6 +35,26 @@
             android:name=".LogIn"
             android:label="@string/title_activity_log_in" >
         </activity>
+        <activity
+            android:name=".TimerFragment"
+            android:label="@string/title_activity_timer_fragment" >
+        </activity>
+        <activity
+            android:name=".SubActivity"
+            android:label="@string/title_activity_sub" >
+        </activity>
+        <activity
+            android:name=".RefreshService"
+            android:label="@string/title_activity_refresh_service" >
+        </activity>
+        <activity
+            android:name=".DbHelper"
+            android:label="@string/title_activity_db_helper" >
+        </activity>
+        <activity
+            android:name=".TimerContract"
+            android:label="@string/title_activity_timer_contract" >
+        </activity>
     </application>
 
 </manifest>

@@ -6,4 +6,9 @@
     <string name="title_activity_main_activity2">MainActivity2Activity</string>
     <string name="title_activity_settings">SettingsActivity</string>
     <string name="title_activity_log_in">LogIn</string>
+    <string name="title_activity_timer_fragment">TimerFragment</string>
+    <string name="title_activity_sub">SubActivity</string>
+    <string name="title_activity_refresh_service">RefreshService</string>
+    <string name="title_activity_db_helper">DbHelper</string>
+    <string name="title_activity_timer_contract">TimerContract</string>
 </resources>
