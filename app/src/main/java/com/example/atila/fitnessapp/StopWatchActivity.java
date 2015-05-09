@@ -1,24 +1,41 @@
 package com.example.atila.fitnessapp;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.os.Environment;
 import android.os.Handler;
 import android.preference.PreferenceManager;
-import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
+import android.widget.Toast;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class StopWatchActivity extends Activity {
+   DatabaseHandler dbHandler;
+    List<UserData> userDatas = new ArrayList<UserData>();
+    private Cursor cursor;
     //Settings
-
-TextView pref_text;
+        TextView pref_text;
+         TextView data_name;
+    TextView data_time;
 
 
     /** Called when the activity is first created. */
@@ -34,11 +51,14 @@ TextView pref_text;
     private String hours,minutes,seconds,milliseconds;
     private long secs,mins,hrs,msecs;
     private boolean stopped = false;
+    private String name;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
 
+
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_stop_watch);
 
         tempTextView = (TextView) findViewById(R.id.timer);
@@ -52,10 +72,17 @@ TextView pref_text;
 
         tempBtn = (Button)findViewById(R.id.stopButton);
 
+        tempBtn = (Button) findViewById(R.id.Showlist);
+
+        tempBtn = (Button) findViewById(R.id.del);
+
         pref_text = (TextView) findViewById(R.id.textView);
 
-
         loadPref();
+
+
+
+
     }
     @Override
     public boolean onCreateOptionsMenu(Menu menu){
@@ -81,7 +108,7 @@ TextView pref_text;
     private void loadPref(){
 
         SharedPreferences myShare = PreferenceManager.getDefaultSharedPreferences(this);
-        String name = myShare.getString("pref","");
+        name = myShare.getString("pref","");
         pref_text.setText(name);
 
     }
@@ -110,9 +137,26 @@ TextView pref_text;
         ((TextView)findViewById(R.id.timer)).setText("00:00:00");
     }
 
-    public void saveClick (View view){
-        Log.i(TAG, "sae knap clicked");
+    public void saveClick (View view) {
+
+        //if(connected) send til Onlline db else
+        //send til SQLite
+        populateDatabase();
+
+        Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_SHORT).show();
+
     }
+
+    public void showList(View view){
+        Intent intent = new Intent(StopWatchActivity.this, com.example.atila.fitnessapp.List.class);
+        startActivity(intent);
+    }
+    public void delList(View view){
+        deleteDatabaseRows();
+
+        Toast.makeText(getApplicationContext(),"All data removed",Toast.LENGTH_SHORT).show();
+    }
+
 
     private Runnable startTimer = new Runnable() {
         public void run() {
@@ -180,5 +224,27 @@ TextView pref_text;
         ((Button)findViewById(R.id.stopButton)).setVisibility(View.GONE);
     }
 
+    private void populateDatabase(){
+
+        DatabaseHandler dbHandler = new DatabaseHandler(this, UserData.Info.DATABASE_NAME, null,UserData.Info.DATABASE_VERSION);
+
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
+
+        ContentValues values = new ContentValues();
+        values.put(UserData.Info.NAME, name);
+        values.put(UserData.Info.TIME, tempTextView.getText().toString());
+
+        long insertedRowId = db.insert(UserData.Info.DATABASE_TABLE, null, values);
+        Log.i(TAG, "Row ID of record added: " + String.valueOf(insertedRowId));
+    }
+
+    private void deleteDatabaseRows(){
+        DatabaseHandler dbHandler = new DatabaseHandler(this, UserData.Info.DATABASE_NAME, null,UserData.Info.DATABASE_VERSION);
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
+
+        db.execSQL("DELETE FROM " + UserData.Info.DATABASE_TABLE);
+
+
+    }
 
 }

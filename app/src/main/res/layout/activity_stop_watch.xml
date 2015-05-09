@@ -88,6 +88,22 @@
                 android:textSize="20dp"
                 android:textStyle="bold" />
 
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Show"
+                android:id="@+id/Showlist"
+                android:layout_gravity="center_horizontal"
+                android:onClick="showList" />
+
+            <Button
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Delete"
+                android:id="@+id/del"
+                android:layout_gravity="center_horizontal"
+                android:onClick="delList" />
+
         </LinearLayout>
     </FrameLayout>
 </RelativeLayout>
