@@ -29,6 +29,7 @@ import java.util.List;
 
 
 public class StopWatchActivity extends Activity {
+    public static String globalTime;
    DatabaseHandler dbHandler;
     List<UserData> userDatas = new ArrayList<UserData>();
     private Cursor cursor;
@@ -55,6 +56,8 @@ public class StopWatchActivity extends Activity {
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
+
+        startService(new Intent(getApplicationContext(), Updater.class));
 
 
         super.onCreate(savedInstanceState);
@@ -88,6 +91,7 @@ public class StopWatchActivity extends Activity {
     public boolean onCreateOptionsMenu(Menu menu){
         getMenuInflater().inflate(R.menu.main, menu);
         return  true;
+
 
     }
     @Override
@@ -127,6 +131,7 @@ public class StopWatchActivity extends Activity {
     }
 
     public void stopClick (View view){
+        globalTime= tempTextView.getText().toString();
         hideStopButton();
         mHandler.removeCallbacks(startTimer);
         stopped = true;
@@ -142,7 +147,6 @@ public class StopWatchActivity extends Activity {
         //if(connected) send til Onlline db else
         //send til SQLite
         populateDatabase();
-
         Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_SHORT).show();
 
     }
