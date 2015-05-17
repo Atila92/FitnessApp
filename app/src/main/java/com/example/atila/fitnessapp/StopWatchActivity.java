@@ -4,9 +4,8 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Environment;
+import android.net.Uri;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.os.Bundle;
@@ -15,29 +14,13 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
-import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-
-
 public class StopWatchActivity extends Activity {
     public static String globalTime;
-   DatabaseHandler dbHandler;
-    List<UserData> userDatas = new ArrayList<UserData>();
-    private Cursor cursor;
     //Settings
         TextView pref_text;
-         TextView data_name;
-    TextView data_time;
-
 
     /** Called when the activity is first created. */
     private static final String TAG = "shiiiiiiit";
@@ -76,8 +59,6 @@ public class StopWatchActivity extends Activity {
         tempBtn = (Button)findViewById(R.id.stopButton);
 
         tempBtn = (Button) findViewById(R.id.Showlist);
-
-        tempBtn = (Button) findViewById(R.id.del);
 
         pref_text = (TextView) findViewById(R.id.textView);
 
@@ -144,22 +125,24 @@ public class StopWatchActivity extends Activity {
 
     public void saveClick (View view) {
 
-        //if(connected) send til Onlline db else
-        //send til SQLite
+        //populating the the sqlite database with the time and the name from preferences
         populateDatabase();
         Toast.makeText(getApplicationContext(),"Added",Toast.LENGTH_SHORT).show();
 
     }
 
     public void showList(View view){
+        //show a list with all data in the database
         Intent intent = new Intent(StopWatchActivity.this, com.example.atila.fitnessapp.List.class);
         startActivity(intent);
     }
-    public void delList(View view){
-        deleteDatabaseRows();
 
-        Toast.makeText(getApplicationContext(),"All data removed",Toast.LENGTH_SHORT).show();
-    }
+    //for testing the databse
+//    public void delList(View view){
+//       deleteDatabaseRows();
+//
+//        Toast.makeText(getApplicationContext(),"All data removed",Toast.LENGTH_SHORT).show();
+// }
 
 
     private Runnable startTimer = new Runnable() {
@@ -175,10 +158,6 @@ public class StopWatchActivity extends Activity {
         mins = (long)((time/1000)/60);
         hrs = (long)(((time/1000)/60)/60);
 
-		/* Convert the seconds to String
-		 * and format to ensure it has
-		 * a leading zero when required
-		 */
         secs = secs % 60;
         seconds=String.valueOf(secs);
         if(secs == 0){
@@ -188,7 +167,7 @@ public class StopWatchActivity extends Activity {
             seconds = "0"+seconds;
         }
 
-		/* Convert the minutes to String and format the String */
+		// Convert the minutes to String and format the String
 
         mins = mins % 60;
         minutes=String.valueOf(mins);
@@ -199,7 +178,7 @@ public class StopWatchActivity extends Activity {
             minutes = "0"+minutes;
         }
 
-    	/* Convert the hours to String and format the String */
+    	//Convert the hours to String and format the String
 
         hours=String.valueOf(hrs);
         if(hrs == 0){
@@ -209,7 +188,7 @@ public class StopWatchActivity extends Activity {
             hours = "0"+hours;
         }
 
-		/* Setting the timer text to the elapsed time */
+		// Setting the timer text to the elapsed time
         ((TextView)findViewById(R.id.timer)).setText(hours + ":" + minutes + ":" + seconds);
 
     }
@@ -230,25 +209,30 @@ public class StopWatchActivity extends Activity {
 
     private void populateDatabase(){
 
-        DatabaseHandler dbHandler = new DatabaseHandler(this, UserData.Info.DATABASE_NAME, null,UserData.Info.DATABASE_VERSION);
+        ContentValues values = new ContentValues();
 
+        values.put(UserData.Info.NAME, name);
+        values.put(UserData.Info.TIME, tempTextView.getText().toString());
+        Uri uri = getContentResolver().insert(ContentProvider.CONTENT_URI,values);
+
+       /* //creating new DatabaseHalder instance
+        DatabaseHandler dbHandler = new DatabaseHandler(this, UserData.Info.DATABASE_NAME, null,UserData.Info.DATABASE_VERSION);
+        //and a SQLiteDatabase
         SQLiteDatabase db = dbHandler.getWritableDatabase();
 
+        //setting what values we wanna post in the SQLite DB
         ContentValues values = new ContentValues();
         values.put(UserData.Info.NAME, name);
         values.put(UserData.Info.TIME, tempTextView.getText().toString());
-
         long insertedRowId = db.insert(UserData.Info.DATABASE_TABLE, null, values);
-        Log.i(TAG, "Row ID of record added: " + String.valueOf(insertedRowId));
+        Log.i(TAG, "Row ID of record added: " + String.valueOf(insertedRowId));*/
     }
 
-    private void deleteDatabaseRows(){
-        DatabaseHandler dbHandler = new DatabaseHandler(this, UserData.Info.DATABASE_NAME, null,UserData.Info.DATABASE_VERSION);
-        SQLiteDatabase db = dbHandler.getWritableDatabase();
-
-        db.execSQL("DELETE FROM " + UserData.Info.DATABASE_TABLE);
-
-
-    }
+    //used for testing
+ //   private void deleteDatabaseRows(){
+ //     DatabaseHandler dbHandler = new DatabaseHandler(this, UserData.Info.DATABASE_NAME, null,UserData.Info.DATABASE_VERSION);
+ // SQLiteDatabase db = dbHandler.getWritableDatabase();
+ // db.execSQL("DELETE FROM " + UserData.Info.DATABASE_TABLE);
+ // }
 
 }

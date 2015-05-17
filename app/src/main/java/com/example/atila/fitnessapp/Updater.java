@@ -1,24 +1,19 @@
 package com.example.atila.fitnessapp;
 
-import android.app.IntentService;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.net.ConnectivityManager;
 import android.os.Binder;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
-import android.util.Log;
-import android.widget.Toast;
 
 import org.apache.http.NameValuePair;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.logging.Handler;
 
 public class Updater extends Service {
 
@@ -28,6 +23,7 @@ public class Updater extends Service {
     private static final String TAG = "com.example.atila.fitnessapp";
     private static final String URL = "http://toiletgamez.com/fitnessapp_db/save_time.php";
     public static Cursor cursor;
+
     public class LocalBinder extends Binder {
         Updater getService() {
             return Updater.this;
@@ -44,14 +40,22 @@ public class Updater extends Service {
     JSONParser jsonParser = new JSONParser();
     @Override
     public void onCreate() {
-        loadPref();
-
+        //service that checks if there is network on the phone if so it takes data from SQLite DB and post it into MySQL online DB
         Runnable runnable = new Runnable() {
             @Override
             public void run() {
                 while (true) {
-                    uploadData();
-                    cursor.requery();
+                    while(isNetworkAvailable()) {
+                        uploadData();
+                        cursor.requery();
+                        try {
+                            Thread.sleep(5000);
+
+
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
 
                     try {
                             Thread.sleep(5000);
@@ -71,6 +75,7 @@ public class Updater extends Service {
     }
 
     private void uploadData() {
+        ///looping the cursor to get data from SQL and post it to MySQL DB
         getData();
         cursor = getData();
         cursor.moveToFirst();
@@ -86,43 +91,45 @@ public class Updater extends Service {
                     URL, "POST", params);
             cursor.moveToNext();
         }
+        //deleting the data in the SQLite DB after data has been posted
         deleteDatabaseRows();
         cursor.close();
     }
-    private void loadPref(){
 
-        SharedPreferences myShare = PreferenceManager.getDefaultSharedPreferences(this);
-        name = myShare.getString("pref","");
+    public boolean isNetworkAvailable() {
+        ConnectivityManager cm = (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
 
+        // test for connection
+        if (cm.getActiveNetworkInfo() != null && cm.getActiveNetworkInfo().isAvailable()
+                && cm.getActiveNetworkInfo().isConnected()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private Cursor getData(){
-        DatabaseHandler dbHandler = new DatabaseHandler(this, UserData.Info.DATABASE_NAME, null,UserData.Info.DATABASE_VERSION);
-        SQLiteDatabase db = dbHandler.getWritableDatabase();
-
         String[] projection = {UserData.Info.NAME
                 , UserData.Info.TIME};
-        Cursor cursor  = db.query(UserData.Info.DATABASE_TABLE, projection,null,null,null,null,null);
+        Cursor cursor = getContentResolver().query(ContentProvider.CONTENT_URI,projection,null,null,null);
 
         return cursor;
     }
     private void deleteDatabaseRows(){
-        DatabaseHandler dbHandler = new DatabaseHandler(this, UserData.Info.DATABASE_NAME, null,UserData.Info.DATABASE_VERSION);
-        SQLiteDatabase db = dbHandler.getWritableDatabase();
 
-        db.execSQL("DELETE FROM " + UserData.Info.DATABASE_TABLE);
+        int count = getContentResolver().delete(ContentProvider.CONTENT_URI,null,null);
+       /* DatabaseHandler dbHandler = new DatabaseHandler(this, UserData.Info.DATABASE_NAME, null,UserData.Info.DATABASE_VERSION);
+        //and a SQLiteDatabase
+        SQLiteDatabase db = dbHandler.getWritableDatabase();
+        db.execSQL("DELETE FROM " + UserData.Info.DATABASE_TABLE);*/
 
 
     }
-
-
-
 
     @Override
     public void onDestroy()
     {
-        super.onDestroy();
+        stopService(new Intent(this, Updater.class));
     }
-
 
 }

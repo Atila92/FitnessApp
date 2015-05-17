@@ -8,7 +8,7 @@ public class UserData {
     public UserData(){
 
     }
-
+//class with some string that we use for the database creating
     public static abstract class Info{
         public static final String DATABASE_NAME = "Timer_DB";
         public static final String DATABASE_TABLE = "Times";
